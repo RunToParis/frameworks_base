@@ -93,13 +93,13 @@ public class ToggleManager {
     public static final String QUICKRECORD_TOGGLE = "QUICKRECORD";
     public static final String SLEEP_TOGGLE = "SLEEP";
     public static final String POWER_MENU_TOGGLE = "POWERMENU";
-    // public static final String REBOOT_TOGGLE = "REBOOT";
     public static final String QUIETHOURS_TOGGLE = "QUIETHOURS";
     public static final String PIE_TOGGLE = "PIE";
-    // public static final String LOCKSCREEN_TOGGLE = "LOCKSCREEN";
-    // public static final String SCREENSHOT_TOGGLE = "SCREENSHOT";
     public static final String DARK_TOGGLE = "DARK";
     public static final String STATUSBAR_TOGGLE = "STATUSBAR";
+    public static final String SCREENSHOT_TOGGLE = "SCREENSHOT";
+    public static final String REBOOT_TOGGLE = "REBOOT";
+    public static final String CUSTOM_TOGGLE = "CUSTOM";
 
     private int mStyle;
     private boolean mShowRebootOnLock = true;
@@ -154,12 +154,13 @@ public class ToggleManager {
             toggleMap.put(QUICKRECORD_TOGGLE, QuickRecordToggle.class);
             toggleMap.put(SLEEP_TOGGLE, SleepToggle.class);
             toggleMap.put(POWER_MENU_TOGGLE, PowerMenuToggle.class);
-            // toggleMap.put(REBOOT_TOGGLE, RebootToggle.class);
             toggleMap.put(QUIETHOURS_TOGGLE, QuietHoursToggle.class);
-            // toggleMap.put(LOCKSCREEN_TOGGLE, LockscreenToggle.class);
+            // toggleMap.put(LOCKSCREEN_TOGGLE, null);
             toggleMap.put(PIE_TOGGLE, PieToggle.class);
-            // toggleMap.put(SCREENSHOT_TOGGLE, ScreenshotToggle.class);
             toggleMap.put(STATUSBAR_TOGGLE, StatusbarToggle.class);
+            toggleMap.put(SCREENSHOT_TOGGLE, ScreenshotToggle.class);
+            toggleMap.put(REBOOT_TOGGLE, RebootToggle.class);
+            toggleMap.put(CUSTOM_TOGGLE, CustomToggle.class);
             // toggleMap.put(BT_TETHER_TOGGLE, null);
         }
         return toggleMap;
@@ -179,9 +180,6 @@ public class ToggleManager {
         };
         mContext.registerReceiver(mBroadcastReceiver, new IntentFilter(ACTION_REQUEST_TOGGLES));
 
-        mKeyguard = (KeyguardManager) mContext.getSystemService(Context.KEYGUARD_SERVICE);
-        mShowRebootOnLock = Settings.System.getBoolean(mContext.getContentResolver(),
-            Settings.System.POWER_DIALOG_SHOW_REBOOT_KEYGUARD, true);
     }
 
     public void cleanup() {
@@ -249,8 +247,18 @@ public class ToggleManager {
                                 params);
             }
 
-            for (LinearLayout row : rows)
+            for (LinearLayout row : rows) {
+                if (row == rows.get(rows.size() - 1)) { // last row - need spacers
+                    if (row.getChildCount() < widgetsPerRow) {
+                        View spacer_front = new View(mContext);
+                        View spacer_end = new View(mContext);
+                        params.weight = 2f; // change weight so spacers grow
+                        row.addView(spacer_front,0, params);
+                        row.addView(spacer_end, params);
+                    }
+                }
                 mContainers[STYLE_TRADITIONAL].addView(row);
+            }
 
             mContainers[STYLE_TRADITIONAL].setVisibility(View.VISIBLE);
         }
@@ -350,11 +358,6 @@ public class ToggleManager {
             tiles.add(toggle);
         }
 
-        // if (mUserToggles.contains(REBOOT_TOGGLE)) {
-        //     if (!mShowRebootOnLock && mKeyguard.isKeyguardLocked()) {
-        //         tiles.remove(REBOOT_TOGGLE);
-        //     }
-        // }
         return tiles;
     }
 

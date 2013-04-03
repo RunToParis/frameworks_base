@@ -207,7 +207,7 @@ public class TabletStatusBar extends BaseStatusBar implements
     KeyEvent mSpaceBarKeyEvent = null;
 
     View mCompatibilityHelpDialog = null;
-    View mDummyView ;
+    public View[] mPieDummyTrigger = new View[4];
 
     // for disabling the status bar
     int mDisabled = 0;
@@ -244,9 +244,12 @@ public class TabletStatusBar extends BaseStatusBar implements
                 WindowManager.LayoutParams.TYPE_NAVIGATION_BAR,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                     | WindowManager.LayoutParams.FLAG_TOUCHABLE_WHEN_WAKING
-                    | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH
-                    | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
+                    | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH,
                 PixelFormat.TRANSLUCENT);
+
+        if (ActivityManager.isHighEndGfx()) {
+            lp.flags |= WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
+        }
 
         lp.gravity = getStatusBarGravity();
         lp.setTitle("SystemBar");
@@ -268,6 +271,7 @@ public class TabletStatusBar extends BaseStatusBar implements
         mNotificationPanel = (NotificationPanel)View.inflate(context,
                 R.layout.system_bar_notification_panel, null);
         mNotificationPanel.setBar(this);
+        mNotificationPanel.setNotificationArea(mNotificationArea);
         mNotificationPanel.show(false, false);
         mNotificationPanel.setOnTouchListener(
                 new TouchOutsideListener(MSG_CLOSE_NOTIFICATION_PANEL, mNotificationPanel));
@@ -390,11 +394,11 @@ public class TabletStatusBar extends BaseStatusBar implements
     }
 
     private int getNotificationPanelHeight() {
-        final Resources res = mContext.getResources();
-        final Display d = mWindowManager.getDefaultDisplay();
-        final Point size = new Point();
-        d.getRealSize(size);
-        return Math.max(res.getDimensionPixelSize(R.dimen.notification_panel_min_height), size.y);
+        Resources res = mContext.getResources();
+        Display display = mWindowManager.getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        return size.y - 25;
     }
 
     @Override
@@ -522,9 +526,12 @@ public class TabletStatusBar extends BaseStatusBar implements
         } catch (RemoteException ex) {
         }
 
-        // Create a dummy view to force the screen to redraw
-        mDummyView = new View(mContext);
-        mWindowManager.addView(mDummyView, getDummyTriggerLayoutParams(mContext,Gravity.TOP));
+        // Overload screen with views that literally do nothing, thank you Google
+        int dummyGravity[] = {Gravity.LEFT, Gravity.TOP, Gravity.RIGHT, Gravity.BOTTOM};  
+        for (int i = 0; i < 4; i++) {
+            mPieDummyTrigger[i] = new View(mContext);
+            mWindowManager.addView(mPieDummyTrigger[i], getDummyTriggerLayoutParams(mContext, dummyGravity[i]));
+        }
 
         mBarContents = (ViewGroup) sb.findViewById(R.id.bar_contents);
 
@@ -564,6 +571,8 @@ public class TabletStatusBar extends BaseStatusBar implements
         final SignalClusterView signalCluster =
                 (SignalClusterView)sb.findViewById(R.id.signal_cluster);
         mNetworkController.addSignalCluster(signalCluster);
+
+        mBarView = (ViewGroup) mStatusBarView;
 
         mNavigationArea = (ViewGroup) sb.findViewById(R.id.navigationArea);
         mNavBarView = (NavigationBarView) sb.findViewById(R.id.navigationBar);
@@ -692,15 +701,21 @@ public class TabletStatusBar extends BaseStatusBar implements
 
     @Override
     protected WindowManager.LayoutParams getSearchLayoutParams(LayoutParams layoutParams) {
+        boolean opaque = false;
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
                 LayoutParams.MATCH_PARENT,
                 LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.TYPE_NAVIGATION_BAR_PANEL,
                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
                         | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
-                        | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH
-                        | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
-                PixelFormat.TRANSLUCENT);
+                        | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH,
+                (opaque ? PixelFormat.OPAQUE : PixelFormat.TRANSLUCENT));
+        if (ActivityManager.isHighEndGfx()) {
+            lp.flags |= WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
+        } else {
+            lp.flags |= WindowManager.LayoutParams.FLAG_DIM_BEHIND;
+            lp.dimAmount = 0.7f;
+        }
         lp.gravity = Gravity.BOTTOM | Gravity.LEFT;
         lp.setTitle("SearchPanel");
         // TODO: Define custom animation for Search panel
@@ -934,7 +949,6 @@ public class TabletStatusBar extends BaseStatusBar implements
                     if (DEBUG) Slog.d(TAG, "opening notifications panel");
                     if (!mNotificationPanel.isShowing()) {
                         mNotificationPanel.show(true, true);
-                        mNotificationArea.setVisibility(View.INVISIBLE);
                         mTicker.halt();
                     }
                     break;
@@ -942,7 +956,6 @@ public class TabletStatusBar extends BaseStatusBar implements
                     if (DEBUG) Slog.d(TAG, "closing notifications panel");
                     if (mNotificationPanel.isShowing()) {
                         mNotificationPanel.show(false, true);
-                        mNotificationArea.setVisibility(View.VISIBLE);
                     }
                     break;
                 case MSG_OPEN_INPUT_METHODS_PANEL:

@@ -2639,7 +2639,7 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
 
         if (mTouchModeReset != null) {
             removeCallbacks(mTouchModeReset);
-            mTouchModeReset.run();
+            mTouchModeReset = null;
         }
         mIsAttached = false;
     }
@@ -3418,7 +3418,6 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
                             mTouchModeReset = new Runnable() {
                                 @Override
                                 public void run() {
-                                    mTouchModeReset = null;
                                     mTouchMode = TOUCH_MODE_REST;
                                     child.setPressed(false);
                                     setPressed(false);
@@ -4441,7 +4440,7 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
                     return;
                 }
 
-                if (lastPos == mLastSeenPos) {
+                if (lastPos == mLastSeenPos && getChildCount() > 1) {
                     // No new views, let things keep going.
                     postOnAnimation(this);
                     return;
@@ -4474,7 +4473,7 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
                 }
                 final int nextPos = firstPos + nextViewIndex;
 
-                if (nextPos == mLastSeenPos) {
+                if (nextPos == mLastSeenPos && getChildCount() > 1) {
                     // No new views, let things keep going.
                     postOnAnimation(this);
                     return;
@@ -4500,7 +4499,7 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
             }
 
             case MOVE_UP_POS: {
-                if (firstPos == mLastSeenPos) {
+                if (firstPos == mLastSeenPos && getChildCount() > 1) {
                     // No new views, let things keep going.
                     postOnAnimation(this);
                     return;
@@ -4531,7 +4530,7 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
                 }
                 final int lastPos = firstPos + lastViewIndex;
 
-                if (lastPos == mLastSeenPos) {
+                if (lastPos == mLastSeenPos && getChildCount() > 1) {
                     // No new views, let things keep going.
                     postOnAnimation(this);
                     return;
@@ -4557,7 +4556,7 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
             }
 
             case MOVE_OFFSET: {
-                if (mLastSeenPos == firstPos) {
+                if (mLastSeenPos == firstPos && getChildCount() > 1) {
                     // No new views, let things keep going.
                     postOnAnimation(this);
                     return;

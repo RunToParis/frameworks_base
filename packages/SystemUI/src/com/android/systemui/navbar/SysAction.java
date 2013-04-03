@@ -65,6 +65,7 @@ import java.util.List;
 public class SysAction {
 
     public final static String TAG = "SysAction";
+    private final static String SysUIPackage = "com.android.systemui";
 
     private SysAction() {
     }
@@ -88,7 +89,11 @@ public class SysAction {
             case ACTION_ASSIST:
                 Intent intent = new Intent(Intent.ACTION_ASSIST);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                mContext.startActivity(intent);
+                try {
+                    mContext.startActivity(intent);
+                } catch (ActivityNotFoundException e) {
+                    Log.e(TAG, "No Activity found to handle Intent { act=android.intent.action.ASSIST flg=0x10000000 }");
+                }
                 break;
             case ACTION_HOME:
                 Intent homeIntent = new Intent(Intent.ACTION_MAIN);
@@ -284,6 +289,8 @@ public class SysAction {
                 defaultHomePackage = res.activityInfo.packageName;
             }
             String packageName = am.getRunningTasks(1).get(0).topActivity.getPackageName();
+            if (SysUIPackage.equals(packageName))
+                return; // don't kill SystemUI
             if (!defaultHomePackage.equals(packageName)) {
                 am.forceStopPackage(packageName);
                 Toast.makeText(mContext, R.string.app_killed_message, Toast.LENGTH_SHORT).show();
