@@ -20,7 +20,7 @@
     <string name="toggle_SETTINGS">Paramètres</string>
     <string name="toggle_WIFI">Wi-Fi</string>
     <string name="toggle_SIGNAL">Réseau</string>
-    <string name="toggle_ROTATE">Rotation Automatique</string>
+    <string name="toggle_ROTATE">Rotation automatique</string>
     <string name="toggle_CLOCK">Horloge</string>
     <string name="toggle_GPS">Statut GPS</string>
     <string name="toggle_IME">Sélecteur d\'IME</string>
@@ -32,7 +32,7 @@
     <string name="toggle_FCHARGE">Charge rapide</string>
     <string name="toggle_SYNC">Synchronisation</string>
     <string name="toggle_TORCH">Torche</string>
-    <string name="toggle_WIFITETHER">Modem WiFi</string>
+    <string name="toggle_WIFITETHER">Modem Wi-Fi</string>
     <string name="toggle_USBTETHER">Modem USB</string>
     <string name="toggle_FAVCONTACT">Contact favoris</string>
     <string name="toggle_SOUNDSTATE">Mode de son</string>
@@ -46,7 +46,9 @@
     <string name="toggle_SCREENSHOT">Capture d\'écran</string>
     <string name="toggle_REBOOT">Redémarrer</string>
     <string name="toggle_STAYAWAKE">Rester écran allumé</string>
-    <string name="toggle_CUSTOM">Toggle personnalisé</string>
+    <string name="toggle_CUSTOM">Interrupteur personnalisé</string>
+    <string name="toggle_CUSTOMIZE">Outils XYE</string>
+    <string name="toggle_DARK">Mode dark</string>
     <string name="toggle_EXPANDEDDESKTOP">Bureau étendu</string>
-    <string name="toggle_WIRELESSADB">ADB Sans-fil</string>
+    <string name="toggle_WIRELESSADB">ADB sans-fil</string>
 </resources>
